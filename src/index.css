@@ -1,0 +1,29 @@
+<<<<<<< HEAD
+/* index.css */
+
+/* Global styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+/* For Toast notifications */
+.Toastify__toast-container {
+  top: 50px !important;
+  z-index: 1000;
+}
+=======
+/* src/index.css */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+  }
+  
+>>>>>>> 1eb72ead90d7e0ba9864969b0d1ecac5105a1c53
