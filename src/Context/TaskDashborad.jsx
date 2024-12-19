@@ -1,138 +1,315 @@
 import React, { useEffect, useState } from "react";
-import Layout from "./Layout";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
-const TaskDashborad = () => {
+const TaskDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [textInput, setTextInput] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState("High");
+  const [taskDate, setTaskDate] = useState(""); // New state for date
   const [selectedTask, setSelectedTask] = useState(null);
+  const [editedText, setEditedText] = useState("");
 
-  // UseEffect For StoredTasks in Local Stroage
+  // UseEffect For StoredTasks in Local Storage
   useEffect(() => {
     const storedTasks = localStorage.getItem("tasks");
     if (storedTasks) {
       setTasks(JSON.parse(storedTasks));
     }
   }, []);
+
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // With Help Of State Management We Handle Input Change
+  // Handle Input Change
   const handleTextInputChange = (event) => {
     setTextInput(event.target.value);
   };
-  // handlePriorityChange
-  const handlePriorityChange = (event) => {
-    setSelectedPriority(event.target.value);
+
+  // Handle Date Change
+  const handleDateChange = (event) => {
+    setTaskDate(event.target.value); // Update task date
   };
 
-  // Handle Function When Click On Submit
+  // Handle Task Submit
   const handleTaskSubmit = () => {
-    if (textInput.trim() === "") {
+    if (textInput.trim() === "" || taskDate.trim() === "") {
       return;
     }
-    // Selecting The New Task To Put
+
+    // Compare task date with today's date
+    const currentDate = new Date();
+    const newTaskDate = new Date(taskDate);
+
+    // Calculate the difference in days
+    const timeDiff = newTaskDate - currentDate;
+    const dayDiff = timeDiff / (1000 * 3600 * 24); // Convert time diff to days
+
+    // Determine priority based on date difference
+    let priority = "Low"; // Default is Low
+    if (dayDiff <= 5) {
+      priority = "High";
+    } else if (dayDiff <= 15) {
+      priority = "Medium";
+    }
+
     const newTask = {
       text: textInput,
-      priority: selectedPriority,
+      priority: priority,
+      date: taskDate, // Adding date to the task object
     };
 
-    setTasks([...tasks, newTask]);
+    setTasks((prevTasks) => [...prevTasks, newTask]);
     setTextInput("");
-    setSelectedPriority("High");
+    setTaskDate(""); // Clear the date input after adding the task
   };
 
   const getTasksByPriority = (priority) => {
     return tasks.filter((task) => task.priority === priority);
   };
 
-  const handleEditTask = (editedText) => {
+  const handleEditTask = (task) => {
+    setSelectedTask(task);
+    setEditedText(task.text);
+  };
+
+  const handleSaveEditedTask = () => {
     const updatedTasks = tasks.map((task) =>
       task === selectedTask ? { ...task, text: editedText } : task
     );
     setTasks(updatedTasks);
     setSelectedTask(null);
+    setEditedText("");
   };
 
-  const handleChangePriority = (newPriority) => {
-    const updatedTasks = tasks.map((task) =>
-      task === selectedTask ? { ...task, priority: newPriority } : task
-    );
+  const handleDeleteTask = (task) => {
+    const updatedTasks = tasks.filter((t) => t !== task);
     setTasks(updatedTasks);
     setSelectedTask(null);
   };
 
-  const handleDeleteTask = () => {
-    const updatedTasks = tasks.filter((task) => task !== selectedTask);
-    setTasks(updatedTasks);
-    setSelectedTask(null);
+  // Function to get color based on priority
+  const getPriorityColor = (priority) => {
+    if (priority === "High") {
+      return "bg-red-600"; // Dark Red for High Priority
+    } else if (priority === "Medium") {
+      return "bg-yellow-600"; // Dark Yellow for Medium Priority
+    } else {
+      return "bg-green-600"; // Dark Green for Low Priority
+    }
   };
 
   return (
     <div className="p-8">
-      <div className="lg:flex grid gap-2 items-center font-main">
-        <div className="">
+      {/* Input Section */}
+      <div className="flex justify-center gap-4 items-center font-main">
+        <div className="w-full lg:w-96">
           <input
             type="text"
             value={textInput}
             onChange={handleTextInputChange}
-            className="w-full lg:w-96 border rounded p-2"
+            className="w-full border rounded p-2"
             placeholder="Enter task"
           />
         </div>
-        <div className="">
-          <select
-            value={selectedPriority}
-            onChange={handlePriorityChange}
+        <div className="w-full lg:w-96">
+          <input
+            type="date"
+            value={taskDate}
+            onChange={handleDateChange}
             className="w-full border rounded p-2"
-          >
-            <option value="High">High Priority</option>
-            <option value="Medium">Medium Priority</option>
-            <option value="Low">Low Priority</option>
-          </select>
+          />
         </div>
         <button onClick={handleTaskSubmit} className="btn btn-secondary">
           Add Task
         </button>
       </div>
 
-      <div className="mt-8 space-y-4 text-black ">
+      {/* Displaying Tasks in Separate Boxes for Each Priority */}
+      <div className="mt-8 space-y-4 text-black">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* High Priority */}
-          <Layout
-            getTasksByPriority={getTasksByPriority}
-            setSelectedTask={setSelectedTask}
-            selectedTask={selectedTask}
-            handleEditTask={handleEditTask}
-            handleChangePriority={handleChangePriority}
-            handleDeleteTask={handleDeleteTask}
-            level="High"
-          />
-          {/* Medium Priority */}
-          <Layout
-            getTasksByPriority={getTasksByPriority}
-            setSelectedTask={setSelectedTask}
-            selectedTask={selectedTask}
-            handleEditTask={handleEditTask}
-            handleChangePriority={handleChangePriority}
-            handleDeleteTask={handleDeleteTask}
-            level="Medium"
-          />
-          {/* Low Priority */}
-          <Layout
-            getTasksByPriority={getTasksByPriority}
-            setSelectedTask={setSelectedTask}
-            selectedTask={selectedTask}
-            handleEditTask={handleEditTask}
-            handleChangePriority={handleChangePriority}
-            handleDeleteTask={handleDeleteTask}
-            level="Low"
-          />
+          {/* High Priority Box */}
+          <div className="p-4 border rounded-lg">
+            <div
+              className={`p-4 text-black text-center font-bold rounded-lg ${getPriorityColor(
+                "High"
+              )}`}
+            >
+              High Priority
+            </div>
+            <div className="mt-4">
+              {getTasksByPriority("High").map((task, index) => (
+                <div
+                  key={index}
+                  className={`p-4 border-2 border-dashed rounded-lg ${getPriorityColor(
+                    task.priority
+                  )} mb-4`}
+                >
+                  {selectedTask === task ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editedText}
+                        onChange={(e) => setEditedText(e.target.value)}
+                        className="w-full border rounded p-2 mb-2"
+                      />
+                      <button
+                        onClick={handleSaveEditedTask}
+                        className="bg-green-500 text-white p-1 rounded"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setSelectedTask(null)}
+                        className="ml-2 bg-gray-500 text-white p-1 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>{task.text}</p>
+                      <p>Priority: {task.priority}</p>
+                      <p>Date: {task.date}</p> {/* Display the task date */}
+                      <div className="flex justify-end gap-2">
+                        <FaEdit
+                          onClick={() => handleEditTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                        <FaTrash
+                          onClick={() => handleDeleteTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Medium Priority Box */}
+          <div className="p-4 border rounded-lg">
+            <div
+              className={`p-4 text-black text-center font-bold rounded-lg ${getPriorityColor(
+                "Medium"
+              )}`}
+            >
+              Medium Priority
+            </div>
+            <div className="mt-4">
+              {getTasksByPriority("Medium").map((task, index) => (
+                <div
+                  key={index}
+                  className={`p-4 border-2 border-dashed rounded-lg ${getPriorityColor(
+                    task.priority
+                  )} mb-4`}
+                >
+                  {selectedTask === task ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editedText}
+                        onChange={(e) => setEditedText(e.target.value)}
+                        className="w-full border rounded p-2 mb-2"
+                      />
+                      <button
+                        onClick={handleSaveEditedTask}
+                        className="bg-green-500 text-white p-1 rounded"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setSelectedTask(null)}
+                        className="ml-2 bg-gray-500 text-white p-1 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>{task.text}</p>
+                      <p>Priority: {task.priority}</p>
+                      <p>Date: {task.date}</p> {/* Display the task date */}
+                      <div className="flex justify-end gap-2">
+                        <FaEdit
+                          onClick={() => handleEditTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                        <FaTrash
+                          onClick={() => handleDeleteTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Low Priority Box */}
+          <div className="p-4 border rounded-lg">
+            <div
+              className={`p-4 text-black text-center font-bold rounded-lg ${getPriorityColor(
+                "Low"
+              )}`}
+            >
+              Low Priority
+            </div>
+            <div className="mt-4">
+              {getTasksByPriority("Low").map((task, index) => (
+                <div
+                  key={index}
+                  className={`p-4 border-2 border-dashed rounded-lg ${getPriorityColor(
+                    task.priority
+                  )} mb-4`}
+                >
+                  {selectedTask === task ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editedText}
+                        onChange={(e) => setEditedText(e.target.value)}
+                        className="w-full border rounded p-2 mb-2"
+                      />
+                      <button
+                        onClick={handleSaveEditedTask}
+                        className="bg-green-500 text-white p-1 rounded"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setSelectedTask(null)}
+                        className="ml-2 bg-gray-500 text-white p-1 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>{task.text}</p>
+                      <p>Priority: {task.priority}</p>
+                      <p>Date: {task.date}</p> {/* Display the task date */}
+                      <div className="flex justify-end gap-2">
+                        <FaEdit
+                          onClick={() => handleEditTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                        <FaTrash
+                          onClick={() => handleDeleteTask(task)}
+                          className="text-black-500 cursor-pointer"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default TaskDashborad;
+export default TaskDashboard;

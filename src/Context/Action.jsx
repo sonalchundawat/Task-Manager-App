@@ -1,16 +1,20 @@
 import React from "react";
+import { FaEdit, FaTrashAlt, FaArrowUp } from "react-icons/fa"; // Correct import of icons
 
 const Action = (props) => {
   return (
     <div className="mt-2 space-x-2">
+      {/* Edit Icon */}
       <button
         className="btn btn-secondary"
         onClick={() =>
           props.handleEditTask(prompt("Edit task:", props.selectedTask.text))
         }
       >
-        Edit
+        <FaEdit /> {/* Edit Icon */}
       </button>
+      
+      {/* Change Priority Icon */}
       <button
         className="btn btn-secondary"
         onClick={() =>
@@ -19,8 +23,10 @@ const Action = (props) => {
           )
         }
       >
-        Change Priority
+        <FaArrowUp /> {/* Change Priority Icon */}
       </button>
+      
+      {/* Delete Icon */}
       <button
         className="btn btn-secondary"
         onClick={() => {
@@ -30,7 +36,7 @@ const Action = (props) => {
           props.handleDeleteTask();
         }}
       >
-        Delete
+        <FaTrashAlt /> {/* Delete Icon */}
       </button>
     </div>
   );

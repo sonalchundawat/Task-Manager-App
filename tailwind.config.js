@@ -5,7 +5,7 @@ module.exports = {
     fontFamily: {
       main: ["Inter", "sans-serif"],
       primary: ["Noto Sans", "sans-serif"],
-      secondary: ["Open Sanss", "sans-serif"],
+      secondary: ["Open Sans", "sans-serif"],
     },
     extend: {},
   },
